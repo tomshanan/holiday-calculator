@@ -1,0 +1,154 @@
+<!-- app/annual-leave-calculator/annual-leave-calculator.component.html -->
+<div class="leave-calculator-container">
+  <!-- Controls Panel -->
+  <div class="controls-panel">
+    <h2>Annual Leave Calculator</h2>
+
+    <form [formGroup]="leaveForm">
+      <!-- Date Range Inputs -->
+      <div class="date-controls">
+        <mat-form-field appearance="outline">
+          <mat-label>Start Date</mat-label>
+          <input
+            matInput
+            [matDatepicker]="startPicker"
+            formControlName="startDate"
+          />
+          <mat-datepicker-toggle
+            matSuffix
+            [for]="startPicker"
+          ></mat-datepicker-toggle>
+          <mat-datepicker #startPicker></mat-datepicker>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>End Date</mat-label>
+          <input
+            matInput
+            [matDatepicker]="endPicker"
+            formControlName="endDate"
+          />
+          <mat-datepicker-toggle
+            matSuffix
+            [for]="endPicker"
+          ></mat-datepicker-toggle>
+          <mat-datepicker #endPicker></mat-datepicker>
+        </mat-form-field>
+      </div>
+
+      <!-- Selection Mode Toggle -->
+      <div class="selection-controls">
+        <mat-label>Selection Mode:</mat-label>
+        <mat-button-toggle-group
+          [value]="selectionMode"
+          (change)="setSelectionMode($event.value)"
+        >
+          <mat-button-toggle value="single" matTooltip="Select individual days">
+            <mat-icon>event</mat-icon> Single Days
+          </mat-button-toggle>
+          <mat-button-toggle value="range" matTooltip="Select a range of days">
+            <mat-icon>date_range</mat-icon> Range
+          </mat-button-toggle>
+          <mat-button-toggle
+            value="comment"
+            matTooltip="Add a comment to selected days"
+          >
+            <mat-icon>comment</mat-icon> Comment
+          </mat-button-toggle>
+        </mat-button-toggle-group>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="action-buttons">
+        <button mat-raised-button color="primary" (click)="applyUKHolidays()">
+          <mat-icon>event_available</mat-icon> Add UK Bank Holidays
+        </button>
+
+        <button mat-raised-button color="warn" (click)="resetCalendar()">
+          <mat-icon>restart_alt</mat-icon> Reset Calendar
+        </button>
+      </div>
+
+      <!-- Summary Card -->
+      <mat-card class="summary-card">
+        <mat-card-header>
+          <mat-card-title>Leave Summary</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <p>
+            Annual Leave: <strong>{{ totalLeaveDays.totalAnnualLeave }}</strong>
+          </p>
+          <p>
+            Bank Holidays: <strong>{{ totalLeaveDays.totalBankHolidaysTaken }}</strong>
+          </p>
+          <p class="total-days">
+            Total days off: <strong>{{ totalLeaveDays.total }}</strong>
+          </p>
+        </mat-card-content>
+      </mat-card>
+    </form>
+  </div>
+
+  <!-- Calendar Panel -->
+  <div class="calendar-panel">
+    <div class="calendar-header">
+      <div class="month-cell"></div>
+      <div
+        class="weekday-header"
+        *ngFor="let day of ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']"
+      >
+        {{ day }}
+      </div>
+    </div>
+    <div class="calendar-body">
+      <ng-container
+        *ngFor="
+          let week of weeks;
+          let i = index;
+          first as isFirst;
+          last as isLast
+        "
+      >
+        <div class="week-row">
+          <div class="month-cell">
+            {{ week.isFirstWeekOfMonth && (week.days[0].date | date: 'MMMM') }}
+          </div>
+          <ng-container *ngIf="isFirst">
+            <div class="day-cell" *ngFor="let day of startPadding()"></div
+          ></ng-container>
+          <ng-container *ngFor="let day of week.days; let i = index">
+            <div
+              class="day-cell"
+              [ngClass]="[
+                getMonthClass(day.monthIndex),
+                day.isWeekend ? 'weekend' : '',
+                day.comment && !day.isSelected ? 'commented' : '',
+                isInRange(day.date) ? 'in-range' : '',
+                day.isSelected || day.date === rangeStart ? 'selected' : ''
+              ]"
+              (click)="toggleDay(day)"
+              (mouseenter)="rangeHover(day.date)"
+              [matTooltip]="day.comment || ''"
+            >
+              <div class="day-number">
+                <span *ngIf="isFirstOfMonth(day.date)" class="month-label">
+                  <!-- First day of month - show month name -->
+                  {{ getMonthName(day.date) }}
+                </span>
+                {{ day.date.getDate() }}
+              </div>
+
+              <!-- Comment text (truncated if needed) -->
+              <div *ngIf="day.comment" class="comment-text">
+                {{ day.comment }}
+              </div>
+            </div>
+          </ng-container>
+          <ng-container *ngIf="isLast"
+            ><div class="day-cell" *ngFor="let day of endPadding()"></div
+          ></ng-container>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+</div>

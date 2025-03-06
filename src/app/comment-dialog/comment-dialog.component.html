@@ -1,0 +1,11 @@
+<h2 mat-dialog-title>Add Comment for {{ data.date | date:'mediumDate' }}</h2>
+    <div mat-dialog-content>
+      <mat-form-field appearance="fill" style="width: 100%">
+        <mat-label>Comment</mat-label>
+        <textarea matInput [(ngModel)]="data.comment" rows="4"></textarea>
+      </mat-form-field>
+    </div>
+    <div mat-dialog-actions align="end">
+      <button mat-button (click)="onCancel()">Cancel</button>
+      <button mat-raised-button color="primary" (click)="onSave()">Save</button>
+    </div>
