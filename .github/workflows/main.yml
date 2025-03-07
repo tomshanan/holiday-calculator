@@ -25,6 +25,9 @@ jobs:
       - name: Build Angular app
         run: npm run build -- --configuration production --base-href "/holiday-calculator/" && mv dist/leave-calculator/browser/* dist/leave-calculator/
 
+      - name: Add CNAME file
+        run: echo "holiday.tomshanan.com" > dist/leave-calculator/CNAME
+        
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
